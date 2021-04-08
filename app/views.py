@@ -9,7 +9,7 @@ import os
 from app import app
 from flask import render_template, request, jsonify
 from werkzeug.utils import secure_filename
-from .forms import UploadForm
+from app.forms import UploadForm
 
 ###
 # Routing for your application.
@@ -31,28 +31,20 @@ def index(path):
     """
     return render_template('index.html')
 
-@app.route('api/upload', methods=['POST'])
+@app.route('/api/upload', methods=['POST'])
 def upload():
     uploadf = UploadForm()
-    if request.method == 'POST':
-        if uploadf.validate_on_submit():
-            descr = uploadf.description.data
-            photo = photo_save(uploadf.photo.data)
+    if request.method == 'POST' and uploadf.validate_on_submit() == True:
+        descr = uploadf.description.data
+        photo = photo_save(uploadf.photo.data)
 
-            message = {
-            "message": "File Upload Successful",
-            "filename": photo,
-            "description": descr
-        }
+        return jsonify(message="File Upload Successful", filename=photo, description=descr)
+    
 
-        return jsonify(message=message)
+        #return jsonify(message=message)
     else:
-        errors = {
-            "errors": [
-                form_errors(uploadf)
-            ]
-        }
-    return jsonify(errors=errors)
+        return jsonify (errors = (form_errors(uploadf)))
+        # return jsonify(errors=errors)
 
 def photo_save(photo):
     fn = secure_filename(photo.filename)
